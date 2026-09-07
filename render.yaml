@@ -1,0 +1,50 @@
+services:
+  - type: web
+    name: teenaitook-api
+    runtime: node
+    plan: 0.5c-512mb
+    region: singapore
+    autoDeployTrigger: checksPass
+    buildCommand: npm install --global pnpm@12.3.4 && pnpm install --frozen-lockfile && pnpm --filter @teenaitook/api db:generate && pnpm --filter @teenaitook/api build && pnpm --filter @teenaitook/api seed:compiled
+    preDeployCommand: pnpm --filter @teenaitook/api db:migrate
+    startCommand: node apps/api/dist/src/main.js
+    initialDeployHook: node apps/api/dist/prisma/seed.js
+    healthCheckPath: /api/health
+    maxShutdownDelaySeconds: 60
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: '3600'
+      - key: CRON_SECRET
+        generateValue: true
+      - key: ADMIN_SEED_EMAIL
+        sync: false
+      - key: ADMIN_SEED_PASSWORD
+        sync: false
+      - key: DEMO_MODE
+        value: 'false'
+      - key: SCRAPER_ENABLED
+        value: 'false'
+      - key: SCRAPER_USER_AGENT
+        value: TeeNaiTook/1.0 (+https://teenaitook.com/about)
+      - key: SCRAPER_REQUEST_TIMEOUT_MS
+        value: '12000'
+      - key: SCRAPER_DELAY_MS
+        value: '2000'
+      - key: SCRAPER_FRESHNESS_HOURS
+        value: '12'
+      - key: SCRAPER_MAX_BODY_BYTES
+        value: '2000000'
+      - key: SWAGGER_ENABLED
+        value: 'false'
+      - key: TRUST_PROXY_HOPS
+        value: '1'

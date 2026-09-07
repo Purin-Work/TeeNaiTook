@@ -102,3 +102,17 @@ This returns **202** with a job ID. The worker continues on the long-running bac
 - Before horizontal scaling, add a shared rate limiter and review job lease and shutdown behavior. Database uniqueness already prevents normal overlapping workers, but the application is intentionally sized for a single-node MVP.
 
 Rollback application images independently from the database. Prefer backward-compatible additive migrations; restoring an old image does not undo schema changes.
+
+## Guided backend deployment: Render + Neon
+
+The committed `render.yaml` creates the NestJS web service in Render's Singapore region. It installs the workspace, generates Prisma Client, builds the API, runs committed migrations before each deploy, seeds the first administrator once, and checks `/api/health`. It intentionally prompts for database credentials, the frontend origin and administrator credentials instead of storing secrets in Git.
+
+1. Create a Neon PostgreSQL project in the Singapore region. Copy its pooled connection string as `DATABASE_URL` and its direct connection string as `DIRECT_URL`.
+2. Deploy the Vercel demo once to obtain its HTTPS URL.
+3. In Render, choose **New > Blueprint**, connect this repository and apply `render.yaml`.
+4. Supply `DATABASE_URL`, `DIRECT_URL`, `FRONTEND_URL`, `ADMIN_SEED_EMAIL` and a 12-72 byte `ADMIN_SEED_PASSWORD` when prompted. Set `FRONTEND_URL` to the exact Vercel origin without a trailing slash.
+5. Wait for `/api/health` on the assigned Render URL to return `status: ok`.
+6. In Vercel, set `API_INTERNAL_URL=https://YOUR-RENDER-SERVICE.onrender.com/api`, `NEXT_PUBLIC_API_URL=/api`, `NEXT_PUBLIC_SITE_URL` to the Vercel URL, and `NEXT_PUBLIC_STANDALONE_DEMO=false`. Redeploy Vercel.
+7. Open `/admin/login` on the Vercel site and use the seeded administrator credentials.
+
+The Blueprint uses Render's paid `starter` web plan because pre-deploy commands are required for safe database migrations. Keep `SCRAPER_ENABLED=false` until real public product URLs have been mapped and tested from the admin area.
