@@ -151,7 +151,7 @@ Log in → Products → add a **new non-demo product** → save → add a retail
 
 The complete template is [`.env.example`](.env.example). See [environment reference](docs/environment.md) for every default and deployment use.
 
-Key settings: `DATABASE_URL`, `DIRECT_URL`, `FRONTEND_URL`, `API_INTERNAL_URL`, `NEXT_PUBLIC_API_URL`, `JWT_SECRET`, `CRON_SECRET`, `ADMIN_SEED_EMAIL`, `ADMIN_SEED_PASSWORD`, `DEMO_MODE`, and `SCRAPER_ENABLED`.
+Key settings: `DATABASE_URL`, `DIRECT_URL`, `FRONTEND_URL`, `API_INTERNAL_URL`, `NEXT_PUBLIC_API_URL`, `JWT_SECRET`, `CRON_SECRET`, `ADMIN_SEED_EMAIL`, `ADMIN_SEED_PASSWORD`, `DEMO_MODE`, `SAMPLE_DATA_ENABLED`, and `SCRAPER_ENABLED`.
 
 ## Database migration and seed data
 

@@ -35,15 +35,6 @@ const examples: {
     specs: { Socket: 'AM5', Cores: '6 Core / 12 Thread' },
   },
   {
-    name: 'Intel Core Ultra 7 265K',
-    slug: 'intel-core-ultra-7-265k',
-    brand: 'Intel',
-    category: 'CPU',
-    model: 'BX80768265K',
-    price: 11900,
-    specs: { Socket: 'LGA1851', Cores: '20 Core / 20 Thread' },
-  },
-  {
     name: 'GeForce RTX 5070 Ti · Demo edition',
     slug: 'geforce-rtx-5070-ti-demo',
     brand: 'NVIDIA',
@@ -79,15 +70,6 @@ const examples: {
     price: 3190,
     specs: { Capacity: '1TB', Interface: 'PCIe 4.0 NVMe', Size: 'M.2 2280' },
   },
-  {
-    name: 'WD Black SN850X 2TB · Demo',
-    slug: 'wd-black-sn850x-2tb-demo',
-    brand: 'WD',
-    category: 'SSD',
-    model: 'DEMO-SN850X-2TB',
-    price: 4990,
-    specs: { Capacity: '2TB', Interface: 'PCIe 4.0 NVMe', Size: 'M.2 2280' },
-  },
 ];
 
 async function main() {
@@ -110,11 +92,12 @@ async function main() {
       await db.retailer.upsert({ where: { slug: retailer.slug }, update: {}, create: retailer }),
     );
   }
-  if (!env.DEMO_MODE) {
+  if (!env.DEMO_MODE && !env.SAMPLE_DATA_ENABLED) {
     console.log('Seeded admin and retailers; no demo data inserted.');
     return;
   }
-  if (env.NODE_ENV === 'production') throw new Error('Demo seed is forbidden in production');
+  if (env.NODE_ENV === 'production' && env.DEMO_MODE)
+    throw new Error('DEMO_MODE is forbidden in production');
   const now = new Date();
   for (let index = 0; index < examples.length; index++) {
     const example = examples[index];
@@ -193,7 +176,7 @@ async function main() {
     });
   }
   console.log(
-    'Seed complete: 8 demo products, 3 retailers, and 91 days of clearly labeled synthetic history. Existing records preserved.',
+    'Seed complete: 6 demo products, 3 retailers, and 91 days of clearly labeled synthetic history. Existing records preserved.',
   );
 }
 main()

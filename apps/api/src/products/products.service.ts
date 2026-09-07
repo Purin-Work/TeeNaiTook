@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { getConfig } from '../common/config';
+import { getConfig, publicDatasetIsDemo } from '../common/config';
 import { AppError } from '../common/errors';
 import { ProductsQueryDto } from './products.dto';
 import { serializeOffers } from './offers';
@@ -24,7 +24,7 @@ export class ProductsService {
     const referenceCutoff = new Date(Date.now() - 36 * 3600000);
     const conditions: Prisma.Sql[] = [
       Prisma.sql`p."isActive" = true`,
-      Prisma.sql`p."isDemo" = ${env.DEMO_MODE}`,
+      Prisma.sql`p."isDemo" = ${publicDatasetIsDemo()}`,
     ];
     for (const word of query.q?.split(' ').filter(Boolean) ?? []) {
       // Escape LIKE wildcards; user text is a bound parameter, never SQL syntax.
@@ -37,7 +37,7 @@ export class ProductsService {
     if (query.brand) conditions.push(Prisma.sql`lower(p.brand) = lower(${query.brand})`);
     if (query.retailer)
       conditions.push(
-        Prisma.sql`EXISTS (SELECT 1 FROM "ProductSource" ss JOIN "Retailer" rr ON rr.id=ss."retailerId" WHERE ss."productId"=p.id AND ss."isActive" AND rr."isActive" AND ss."isDemo"=${env.DEMO_MODE} AND rr.slug=${query.retailer})`,
+        Prisma.sql`EXISTS (SELECT 1 FROM "ProductSource" ss JOIN "Retailer" rr ON rr.id=ss."retailerId" WHERE ss."productId"=p.id AND ss."isActive" AND rr."isActive" AND ss."isDemo"=${publicDatasetIsDemo()} AND rr.slug=${query.retailer})`,
       );
     if (query.inStock) conditions.push(Prisma.sql`o.minimum IS NOT NULL`);
     if (query.minPrice !== undefined) conditions.push(Prisma.sql`o.minimum >= ${query.minPrice}`);
@@ -46,7 +46,7 @@ export class ProductsService {
       SELECT MIN(s."currentPrice") FILTER (WHERE s."inStock"=true AND s."lastSuccessAt">=${cutoff} AND s."currentPrice">0) AS minimum,
       MAX(s."lastSuccessAt") AS updated
       FROM "ProductSource" s JOIN "Retailer" r ON r.id=s."retailerId"
-      WHERE s."productId"=p.id AND s."isActive" AND r."isActive" AND s."isDemo"=${env.DEMO_MODE}
+      WHERE s."productId"=p.id AND s."isActive" AND r."isActive" AND s."isDemo"=${publicDatasetIsDemo()}
     ) o ON true WHERE ${Prisma.join(conditions, ' AND ')}`;
     const order = {
       price_asc: Prisma.sql`o.minimum ASC NULLS LAST, p.name ASC`,
@@ -63,7 +63,9 @@ export class ProductsService {
     ]);
     const products = await this.db.product.findMany({
       where: { id: { in: ids.map((p) => p.id) } },
-      include: { sources: { where: { isDemo: env.DEMO_MODE }, include: { retailer: true } } },
+      include: {
+        sources: { where: { isDemo: publicDatasetIsDemo() }, include: { retailer: true } },
+      },
     });
     const data = ids.map(({ id }) => this.serialize(products.find((p) => p.id === id)!));
     const total = Number(counts[0].total);
@@ -74,16 +76,16 @@ export class ProductsService {
         limit: query.limit,
         total,
         totalPages: Math.ceil(total / query.limit),
-        isDemo: env.DEMO_MODE,
+        isDemo: publicDatasetIsDemo(),
       },
     };
   }
 
   async find(slug: string) {
     const product = await this.db.product.findFirst({
-      where: { slug, isActive: true, isDemo: getConfig().DEMO_MODE },
+      where: { slug, isActive: true, isDemo: publicDatasetIsDemo() },
       include: {
-        sources: { where: { isDemo: getConfig().DEMO_MODE }, include: { retailer: true } },
+        sources: { where: { isDemo: publicDatasetIsDemo() }, include: { retailer: true } },
       },
     });
     if (!product) throw new AppError('PRODUCT_NOT_FOUND', 'ไม่พบสินค้านี้', 404);
@@ -97,7 +99,7 @@ export class ProductsService {
 
   async recordView(slug: string) {
     const result = await this.db.product.updateMany({
-      where: { slug, isActive: true, isDemo: getConfig().DEMO_MODE },
+      where: { slug, isActive: true, isDemo: publicDatasetIsDemo() },
       data: { viewCount: { increment: 1 } },
     });
     if (!result.count) throw new AppError('PRODUCT_NOT_FOUND', 'ไม่พบสินค้านี้', 404);

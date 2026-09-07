@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { getConfig } from '../common/config';
+import { publicDatasetIsDemo } from '../common/config';
 import { priceStatus } from './price-math';
 import { HistoryQueryDto } from '../products/products.dto';
 
@@ -19,7 +19,7 @@ export class PricesService {
     const base = Prisma.sql`FROM "PriceSnapshot" ps JOIN "ProductSource" s ON s.id=ps."productSourceId"
       JOIN "Retailer" r ON r.id=s."retailerId"
       WHERE s."productId"=${product.id}::uuid AND ps.status='SUCCESS' AND ps."inStock"=true AND ps.price>0
-      AND ps."isDemo"=${getConfig().DEMO_MODE} AND ps."checkedAt"<=now()`;
+      AND ps."isDemo"=${publicDatasetIsDemo()} AND ps."checkedAt"<=now()`;
     const points = await this.db.$queryRaw<DayRow[]>(Prisma.sql`
       WITH daily AS (
         SELECT (ps."checkedAt" AT TIME ZONE 'Asia/Bangkok')::date AS day, MIN(ps.price) AS price,
@@ -51,7 +51,7 @@ export class PricesService {
       range: query.range,
       mode: query.mode,
       timezone: 'Asia/Bangkok',
-      isDemo: getConfig().DEMO_MODE,
+      isDemo: publicDatasetIsDemo(),
       bucketDays: points[0]?.bucketDays ?? 1,
       points: points.map((p) => ({ ...p, price: p.price.toFixed(2) })),
       summary: {

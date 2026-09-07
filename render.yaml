@@ -29,6 +29,8 @@ services:
         sync: false
       - key: DEMO_MODE
         value: 'false'
+      - key: SAMPLE_DATA_ENABLED
+        value: 'true'
       - key: SCRAPER_ENABLED
         value: 'false'
       - key: SCRAPER_USER_AGENT

@@ -10,6 +10,7 @@ const envSchema = z.object({
   JWT_EXPIRES_IN: z.coerce.number().int().min(60).max(86400).default(3600),
   CRON_SECRET: z.string().min(32),
   DEMO_MODE: boolean.default(false),
+  SAMPLE_DATA_ENABLED: boolean.default(false),
   SCRAPER_ENABLED: boolean.default(false),
   SCRAPER_USER_AGENT: z.string().min(10).default('TeeNaiTook/1.0 (+https://teenaitook.com/about)'),
   SCRAPER_REQUEST_TIMEOUT_MS: z.coerce.number().int().min(1000).max(30000).default(12000),
@@ -44,4 +45,8 @@ export function parseEnvironment(input: Record<string, unknown>): Environment {
 export function getConfig(): Environment {
   configuration ??= parseEnvironment(process.env);
   return configuration;
+}
+export function publicDatasetIsDemo() {
+  const env = getConfig();
+  return env.DEMO_MODE || env.SAMPLE_DATA_ENABLED;
 }

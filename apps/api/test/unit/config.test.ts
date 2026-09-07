@@ -9,6 +9,11 @@ const env = {
 };
 test('production config rejects demo mode, insecure origins, missing secrets and invalid booleans', () => {
   assert.equal(parseEnvironment({ ...env, NODE_ENV: 'production' }).DEMO_MODE, false);
+  assert.equal(
+    parseEnvironment({ ...env, NODE_ENV: 'production', SAMPLE_DATA_ENABLED: 'true' })
+      .SAMPLE_DATA_ENABLED,
+    true,
+  );
   assert.throws(() => parseEnvironment({ ...env, NODE_ENV: 'production', DEMO_MODE: 'true' }));
   assert.throws(() =>
     parseEnvironment({ ...env, NODE_ENV: 'production', FRONTEND_URL: 'http://localhost:3000' }),

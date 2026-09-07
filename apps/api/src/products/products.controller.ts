@@ -6,7 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ProductsService } from './products.service';
 import { BrandsQueryDto, HistoryQueryDto, ProductsQueryDto } from './products.dto';
 import { PricesService } from '../prices/prices.service';
-import { getConfig } from '../common/config';
+import { publicDatasetIsDemo } from '../common/config';
 
 @ApiTags('Products')
 @Controller('products')
@@ -69,7 +69,7 @@ export class CatalogueController {
     const products = await this.db.product.findMany({
       where: {
         isActive: true,
-        isDemo: getConfig().DEMO_MODE,
+        isDemo: publicDatasetIsDemo(),
         ...(query.category ? { category: query.category } : {}),
       },
       distinct: ['brand'],
