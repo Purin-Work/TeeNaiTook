@@ -1,0 +1,54 @@
+import type { Category, Retailer, PageResult } from './types';
+export type AdminProduct = {
+  id: string;
+  name: string;
+  slug: string;
+  brand: string;
+  category: Category;
+  modelNumber: string | null;
+  description: string | null;
+  specs: Record<string, string | number | boolean> | null;
+  isActive: boolean;
+  isDemo: boolean;
+  sources?: AdminSource[];
+};
+export type AdminSource = {
+  id: string;
+  productId: string;
+  retailerId: string;
+  url: string;
+  currentPrice: string | null;
+  inStock: boolean | null;
+  retailerProductName: string | null;
+  lastSuccessAt: string | null;
+  lastCheckedAt: string | null;
+  lastError: string | null;
+  isActive: boolean;
+  isDemo: boolean;
+  retailer: Retailer;
+  product?: { id: string; name: string };
+};
+export type ScrapeJob = {
+  id: string;
+  triggerType: string;
+  status: string;
+  totalSources: number;
+  successCount: number;
+  failureCount: number;
+  startedAt: string | null;
+  finishedAt: string | null;
+  createdAt: string;
+  logs?: PageResult<ScrapeLog>;
+};
+export type ScrapeLog = {
+  retailerProductName: string | null;
+  id: string;
+  level: string;
+  message: string;
+  durationMs: number | null;
+  price: string | null;
+  parser: string | null;
+  createdAt: string;
+  retailer: { name: string } | null;
+  productSource: { product: { name: string } } | null;
+};

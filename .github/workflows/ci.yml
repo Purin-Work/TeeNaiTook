@@ -1,0 +1,39 @@
+name: Verify TeeNaiTook
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install --global pnpm@12.3.4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm setup:env
+      - run: docker compose up -d --wait db
+      - run: pnpm db:generate && pnpm db:migrate && pnpm db:seed
+      - run: pnpm lint && pnpm typecheck && pnpm test && pnpm test:e2e && pnpm build
+      - run: pnpm --filter @teenaitook/web exec playwright install --with-deps chromium
+      - name: Browser user flows against production builds
+        run: |
+          node --env-file=.env apps/api/dist/src/main.js > api.log 2>&1 &
+          pnpm --filter @teenaitook/web start > web.log 2>&1 &
+          node scripts/wait-for-http.mjs http://localhost:4000/api/health http://localhost:3000
+          pnpm test:web
+      - name: Verify API container builds
+        run: docker build -f docker/api.Dockerfile -t teenaitook-api .
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: verification-results
+          path: |
+            apps/web/test-results
+            apps/web/playwright-report
+            api.log
+            web.log
+          retention-days: 3

@@ -1,0 +1,53 @@
+{
+  "name": "@teenaitook/api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsc-watch -p tsconfig.build.json --onSuccess \"node --env-file=../../.env dist/src/main.js\"",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/src/main.js",
+    "typecheck": "tsc --noEmit",
+    "test": "tsc -p tsconfig.json && node --test dist/test/unit/*.test.js",
+    "test:e2e": "tsc -p tsconfig.json && node --env-file=../../.env --test dist/test/e2e/*.test.js",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "prisma db seed",
+    "seed:compiled": "tsc -p tsconfig.seed.json && node dist/prisma/seed.js",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset"
+  },
+  "dependencies": {
+    "@nestjs/common": "12.0.1",
+    "@nestjs/core": "12.0.1",
+    "@nestjs/platform-express": "12.0.1",
+    "@nestjs/jwt": "12.0.1",
+    "@nestjs/schedule": "12.0.1",
+    "@nestjs/swagger": "12.0.1",
+    "@prisma/client": "7.10.0",
+    "@prisma/adapter-pg": "7.10.0",
+    "bcryptjs": "3.0.3",
+    "cheerio": "1.2.0",
+    "class-transformer": "0.5.1",
+    "class-validator": "0.15.1",
+    "cookie-parser": "1.4.7",
+    "dotenv": "17.4.2",
+    "express": "5.2.1",
+    "express-rate-limit": "8.7.0",
+    "helmet": "8.3.0",
+    "ipaddr.js": "2.5.0",
+    "pg": "8.23.0",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "12.0.1",
+    "@types/cookie-parser": "1.4.10",
+    "@types/express": "5.0.6",
+    "@types/pg": "8.23.1",
+    "@types/supertest": "7.2.1",
+    "prisma": "7.10.0",
+    "supertest": "7.2.2",
+    "tsc-watch": "7.2.1"
+  }
+}

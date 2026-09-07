@@ -1,0 +1,13 @@
+**/node_modules
+**/dist
+**/.next
+**/.env
+**/.env.*
+!**/.env.example
+.git
+.tools
+.local
+**/test-results
+**/playwright-report
+**/coverage
+apps/api/src/generated

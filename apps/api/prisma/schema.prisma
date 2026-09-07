@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client"
+  output = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+}
+
+enum Category {
+  CPU
+  GPU
+  RAM
+  SSD
+}
+
+enum ScrapeStatus {
+  SUCCESS
+  FAILED
+  PARTIAL
+}
+
+enum TriggerType {
+  SCHEDULED
+  MANUAL
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  PARTIAL
+  FAILED
+}
+
+model User {
+  id String @id @default(uuid()) @db.Uuid
+  email String @unique
+  passwordHash String
+  role Role @default(ADMIN)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+}
+
+model Product {
+  id String @id @default(uuid()) @db.Uuid
+  name String
+  slug String @unique
+  brand String
+  category Category
+  modelNumber String?
+  description String?
+  specs Json?
+  imageUrl String?
+  isActive Boolean @default(true)
+  isDemo Boolean @default(false)
+  referencePrice Decimal? @db.Decimal(12, 2)
+  referenceComputedAt DateTime? @db.Timestamptz(3)
+  historyDays Int @default(0)
+  viewCount Int @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  sources ProductSource[]
+
+  @@index([modelNumber])
+  @@index([category, brand, isActive])
+  @@index([isDemo, isActive])
+}
+
+model Retailer {
+  id String @id @default(uuid()) @db.Uuid
+  name String
+  slug String @unique
+  baseUrl String
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  sources ProductSource[]
+  logs ScrapeLog[]
+}
+
+model ProductSource {
+  id String @id @default(uuid()) @db.Uuid
+  productId String @db.Uuid
+  retailerId String @db.Uuid
+  url String
+  retailerProductName String?
+  retailerSku String?
+  currentPrice Decimal? @db.Decimal(12, 2)
+  regularPrice Decimal? @db.Decimal(12, 2)
+  inStock Boolean?
+  lastCheckedAt DateTime? @db.Timestamptz(3)
+  lastSuccessAt DateTime? @db.Timestamptz(3)
+  lastError String?
+  isActive Boolean @default(true)
+  isDemo Boolean @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  retailer Retailer @relation(fields: [retailerId], references: [id], onDelete: Restrict)
+  snapshots PriceSnapshot[]
+  logs ScrapeLog[]
+
+  @@unique([productId, retailerId])
+  @@index([retailerId])
+  @@index([lastCheckedAt])
+  @@index([isActive, isDemo])
+}
+
+model PriceSnapshot {
+  id String @id @default(uuid()) @db.Uuid
+  productSourceId String @db.Uuid
+  price Decimal? @db.Decimal(12, 2)
+  regularPrice Decimal? @db.Decimal(12, 2)
+  inStock Boolean?
+  checkedAt DateTime @db.Timestamptz(3)
+  status ScrapeStatus
+  isDemo Boolean @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  productSource ProductSource @relation(fields: [productSourceId], references: [id], onDelete: Restrict)
+
+  @@index([productSourceId, checkedAt])
+  @@index([checkedAt])
+}
+
+model ScrapeJob {
+  id String @id @default(uuid()) @db.Uuid
+  triggerType TriggerType
+  status JobStatus @default(PENDING)
+  startedAt DateTime? @db.Timestamptz(3)
+  finishedAt DateTime? @db.Timestamptz(3)
+  heartbeatAt DateTime? @db.Timestamptz(3)
+  totalSources Int @default(0)
+  successCount Int @default(0)
+  failureCount Int @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  logs ScrapeLog[]
+
+  @@index([status, createdAt])
+}
+
+model ScrapeLog {
+  id String @id @default(uuid()) @db.Uuid
+  scrapeJobId String @db.Uuid
+  productSourceId String? @db.Uuid
+  retailerId String? @db.Uuid
+  level String
+  message String
+  durationMs Int?
+  price Decimal? @db.Decimal(12, 2)
+  parser String?
+  retailerProductName String?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  scrapeJob ScrapeJob @relation(fields: [scrapeJobId], references: [id], onDelete: Cascade)
+  productSource ProductSource? @relation(fields: [productSourceId], references: [id], onDelete: SetNull)
+  retailer Retailer? @relation(fields: [retailerId], references: [id], onDelete: SetNull)
+
+  @@index([scrapeJobId, createdAt])
+}

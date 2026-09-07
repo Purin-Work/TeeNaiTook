@@ -1,0 +1,9 @@
+{
+  "plugins": ["typescript", "react", "jsx-a11y"],
+  "ignorePatterns": ["**/dist/**", "**/.next/**", "**/generated/**", ".tools/**", ".local/**"],
+  "rules": {
+    "typescript/no-explicit-any": "error",
+    "react/set-state-in-effect": "off",
+    "jsx-a11y/prefer-tag-over-role": "off"
+  }
+}

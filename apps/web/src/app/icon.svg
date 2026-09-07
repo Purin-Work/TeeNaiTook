@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+  <rect width="40" height="40" rx="10" fill="#67e8f9"/>
+  <g transform="translate(4 4)" fill="none" stroke="#0b1720" stroke-width="2.4" stroke-linecap="round">
+    <path d="M9 3v4m7-4v4m7-4v4M9 25v4m7-4v4m7-4v4M3 9h4m-4 7h4m-4 7h4M25 9h4m-4 7h4m-4 7h4"/>
+    <rect x="6.5" y="6.5" width="19" height="19" rx="3.5"/>
+  </g>
+  <rect x="14" y="14" width="12" height="12" rx="2" fill="#0b1720"/>
+  <text x="20" y="22.1" text-anchor="middle" fill="#67e8f9" font-family="Arial,sans-serif" font-size="5.4" font-weight="800">CPU</text>
+</svg>
