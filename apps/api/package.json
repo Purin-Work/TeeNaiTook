@@ -13,6 +13,7 @@
     "db:migrate": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "seed:compiled": "tsc -p tsconfig.seed.json && node dist/prisma/seed.js",
+    "seed:build": "tsc -p tsconfig.seed.json",
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset"
   },
