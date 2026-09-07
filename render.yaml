@@ -2,13 +2,11 @@ services:
   - type: web
     name: teenaitook-api
     runtime: node
-    plan: 0.5c-512mb
+    plan: free
     region: singapore
     autoDeployTrigger: checksPass
     buildCommand: npm install --global pnpm@12.3.4 && pnpm install --frozen-lockfile && pnpm --filter @teenaitook/api db:generate && pnpm --filter @teenaitook/api build && pnpm --filter @teenaitook/api seed:compiled
-    preDeployCommand: pnpm --filter @teenaitook/api db:migrate
-    startCommand: node apps/api/dist/src/main.js
-    initialDeployHook: node apps/api/dist/prisma/seed.js
+    startCommand: pnpm --filter @teenaitook/api db:migrate && node apps/api/dist/prisma/seed.js && node apps/api/dist/src/main.js
     healthCheckPath: /api/health
     maxShutdownDelaySeconds: 60
     envVars:

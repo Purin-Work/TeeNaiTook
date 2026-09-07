@@ -105,7 +105,7 @@ Rollback application images independently from the database. Prefer backward-com
 
 ## Guided backend deployment: Render + Neon
 
-The committed `render.yaml` creates the NestJS web service in Render's Singapore region. It installs the workspace, generates Prisma Client, builds the API, runs committed migrations before each deploy, seeds the first administrator once, and checks `/api/health`. It intentionally prompts for database credentials, the frontend origin and administrator credentials instead of storing secrets in Git.
+The committed `render.yaml` creates the NestJS web service in Render's Singapore region. It installs the workspace, generates Prisma Client, builds the API, runs committed migrations and an idempotent administrator seed when the free service starts, and checks `/api/health`. It intentionally prompts for database credentials, the frontend origin and administrator credentials instead of storing secrets in Git.
 
 1. Create a Neon PostgreSQL project in the Singapore region. Copy its pooled connection string as `DATABASE_URL` and its direct connection string as `DIRECT_URL`.
 2. Deploy the Vercel demo once to obtain its HTTPS URL.
@@ -115,4 +115,4 @@ The committed `render.yaml` creates the NestJS web service in Render's Singapore
 6. In Vercel, set `API_INTERNAL_URL=https://YOUR-RENDER-SERVICE.onrender.com/api`, `NEXT_PUBLIC_API_URL=/api`, `NEXT_PUBLIC_SITE_URL` to the Vercel URL, and `NEXT_PUBLIC_STANDALONE_DEMO=false`. Redeploy Vercel.
 7. Open `/admin/login` on the Vercel site and use the seeded administrator credentials.
 
-The Blueprint uses Render's paid `starter` web plan because pre-deploy commands are required for safe database migrations. Keep `SCRAPER_ENABLED=false` until real public product URLs have been mapped and tested from the admin area.
+The Blueprint uses Render's free web plan. Because that plan does not support pre-deploy commands, the single service applies idempotent migrations and seed data before starting NestJS. It can sleep after inactivity, so the first request can be slow. Keep `SCRAPER_ENABLED=false` until real public product URLs have been mapped and tested from the admin area.
